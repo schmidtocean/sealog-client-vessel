@@ -1,0 +1,98 @@
+const { ROOT_PATH, HEADER_TITLE } = require('./src/client_config');
+const webpack = require('webpack');
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ProvidePlugin = require('process');
+
+module.exports = {
+  devServer: {
+    port: 8080,
+    static: './dist',
+    historyApiFallback: {
+      disableDotRule: true,
+      index: ROOT_PATH
+    }
+  },
+  output: {
+    path: path.join(__dirname, '/dist'),
+    filename: 'js/index.bundle.js',
+    publicPath: ROOT_PATH,
+    clean: true
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader'
+        }
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          process.env.NODE_ENV !== "production"
+          ? "style-loader"
+          : MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+            }
+          },
+          {
+            loader: "sass-loader",
+            options: {
+              sourceMap: true
+            }
+          }
+        ],
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[hash][ext][query]'
+        }
+      },
+      {
+        test: /\.(png|jpg|jpeg)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[hash][ext]'
+        }
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[hash][ext][query]'
+        }
+      }
+    ]
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+    new HtmlWebpackPlugin({
+      title: HEADER_TITLE,
+      template: './src/assets/index.html',
+    }),
+    new MiniCssExtractPlugin({
+      filename: "style/[name].css",
+      chunkFilename: "style/[id].css",
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' },
+      ]
+    }),
+  ],
+}
