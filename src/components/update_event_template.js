@@ -31,11 +31,15 @@ class UpdateEventTemplate extends Component {
     if(typeof formProps.system_template === 'undefined') {
       formProps.system_template = false;
     }
-
+  
+    if(typeof formProps.is_power_logger === 'undefined') {
+      formProps.is_power_logger = false;
+    }
+  
     if(typeof(formProps.disabled) === 'undefined') {
       formProps.disabled = false;
     }
-
+  
     if(formProps.template_categories && typeof formProps.template_categories !== 'object') {
       formProps.template_categories = formProps.template_categories.split(',');
       formProps.template_categories = formProps.template_categories.map(string => {
@@ -202,10 +206,11 @@ class UpdateEventTemplate extends Component {
   }
 
   renderAdminOptions() {
-    if(this.props.roles.includes('admin')) {
+    if(this.props.roles.includes('admin') || this.props.roles.includes('template_manager')) {
       return (
         <div>
           {this.renderSystemEventTemplateOption()}
+          {this.renderPowerLoggerOnlyOption()}
           {this.renderDisableTemplateOption()}
         </div>
       );
@@ -218,6 +223,19 @@ class UpdateEventTemplate extends Component {
         name='system_template'
         component={renderSwitch}
         label="System Template"
+        lg={12}
+        sm={12}
+      />
+    );
+  }
+    
+  renderPowerLoggerOnlyOption() {
+    return (
+      <Field
+        name="is_power_logger"
+        component={renderSwitch}
+        label="Power Logger Only"
+        normalize={value => Boolean(value)}
         lg={12}
         sm={12}
       />
@@ -326,13 +344,35 @@ function validate(formProps) {
   }
 
   if (formProps.event_options && formProps.event_options.length) {
+
     const event_optionsArrayErrors = [];
+
+    // look for duplicate keys
+    let seen = []
+    let dupes = []
+
+    formProps.event_options.forEach((event_option) => {
+      if (event_option.event_option_name && event_option.event_option_name.length > 0) {
+        if (seen.indexOf(event_option.event_option_name.toLowerCase()) >= 0) {
+          dupes.push(event_option.event_option_name.toLowerCase())
+        }
+        else {
+          seen.push(event_option.event_option_name.toLowerCase())
+        }
+      }
+    })
+
     formProps.event_options.forEach((event_option, event_optionIndex) => {
       const event_optionErrors = {};
       if (!event_option || !event_option.event_option_name) {
         event_optionErrors.event_option_name = 'Required';
         event_optionsArrayErrors[event_optionIndex] = event_optionErrors;
       }
+      else if (dupes.indexOf(event_option.event_option_name.toLowerCase()) >=0) {
+        event_optionErrors.event_option_name = 'Option name must be unique';
+        event_optionsArrayErrors[event_optionIndex] = event_optionErrors;
+      }
+
       if (!event_option || !event_option.event_option_type) {
         event_optionErrors.event_option_type = 'Required';
         event_optionsArrayErrors[event_optionIndex] = event_optionErrors;
@@ -427,15 +467,18 @@ function validate(formProps) {
 
 
 function mapStateToProps(state) {
-
+  const eventTemplate = state.event_template.event_template;
   return {
     errorMessage: state.event_template.event_template_error,
     message: state.event_template.event_template_message,
-    initialValues: state.event_template.event_template,
+    initialValues: {
+      ...eventTemplate,
+      is_power_logger: Boolean(eventTemplate.is_power_logger)
+    },
     roles: state.user.profile.roles,
-    event_options: selector(state, 'event_options')
+    event_options: selector(state, 'event_options'),
+    formValues: selector(state, 'is_power_logger', 'system_template', 'disabled')
   };
-
 }
 
 const selector = formValueSelector('editEventTemplate');
