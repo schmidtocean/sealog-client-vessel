@@ -13,9 +13,9 @@ import { getImageUrl, handleMissingImage } from '../utils';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData', 'SealogVesselUI'];
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData', 'SealogVesselUI'];
 
 const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
@@ -191,6 +191,10 @@ class EventHistory extends Component {
 
   handleEventCommentModal(event) {
     this.props.showModal('eventComment', { event: event, handleUpdateEvent: this.props.updateEvent });
+  }
+  
+  handleEventImageModal(event) {
+    this.props.showModal('eventImage', { event: event, handleUpdateEvent: this.props.updateEvent });
   }
 
   renderEventHistoryHeader() {
@@ -424,8 +428,9 @@ class EventHistory extends Component {
         let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
         let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon inverse icon='plus' fixedWidth transform="shrink-4"/></span>;
         let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
+        let updateImageIcon = (<Button variant="" size="sm" onClick={() => this.handleEventImageModal(event)}>📷</Button>);
 
-        eventArray.push(<ListGroup.Item className="event-list-item py-1" key={event.id} ><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip}</span></ListGroup.Item>);
+        eventArray.push(<ListGroup.Item className="event-list-item py-1" key={event.id} ><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip}{updateImageIcon}</span></ListGroup.Item>);
       }
       return eventArray;
     }
