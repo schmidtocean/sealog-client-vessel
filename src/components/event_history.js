@@ -194,7 +194,21 @@ class EventHistory extends Component {
   }
   
   handleEventImageModal(event) {
-    this.props.showModal('eventImage', { event: event, handleUpdateEvent: this.props.updateEvent });
+    const refreshAfterUpload = () => {
+      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, this.state.page);
+      
+      if (this.state.event && this.state.event.id === event.id) {
+        this.fetchEventExport(event.id);
+      }
+    };
+  
+    this.props.showModal('eventImage', { 
+      event: event, 
+      handleUpdateEvent: (updatedEvent) => {
+        this.props.updateEvent(updatedEvent);
+        refreshAfterUpload();
+      }
+    });
   }
 
   renderEventHistoryHeader() {
