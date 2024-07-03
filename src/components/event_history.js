@@ -112,8 +112,20 @@ class EventHistory extends Component {
       };
 
       const updateAuxDataHandler = (update) => {
-        if(this.state.showNewEventDetails && update.event_id === this.state.event.id) {
-          this.fetchEventExport(this.state.event.id);
+        if (this.state.showNewEventDetails && update.event_id === this.state.event.id) {
+          // Check if this is a deletion (no data_array indicates deletion)
+          if (!update.data_array) {
+            // Remove the deleted aux data from the state
+            this.setState(prevState => ({
+              event: {
+                ...prevState.event,
+                aux_data: prevState.event.aux_data.filter(data => data.id !== update.id)
+              }
+            }));
+          } else {
+            // This is an update or new aux data
+            this.fetchEventExport(this.state.event.id);
+          }
         }
       };
 
@@ -135,6 +147,7 @@ class EventHistory extends Component {
       this.client.subscribe('/ws/status/deleteEvents', deleteHandler);
       this.client.subscribe('/ws/status/newEventAuxData', updateAuxDataHandler);
       this.client.subscribe('/ws/status/updateEventAuxData', updateAuxDataHandler);
+      this.client.subscribe('/ws/status/deleteEventAuxData', updateAuxDataHandler);
 
     } catch(error) {
       console.log(error);
@@ -329,18 +342,19 @@ class EventHistory extends Component {
   }
 
   renderImageryCard() {
-    if(this.state.event && this.state.event.aux_data) { 
-      let frameGrabberData = this.state.event.aux_data.filter(aux_data => imageAuxDataSources.includes(aux_data.data_source))
-      let tmpData = []
+    if (this.state.event && this.state.event.aux_data) { 
+      let frameGrabberData = this.state.event.aux_data.filter(aux_data => 
+        imageAuxDataSources.includes(aux_data.data_source) && aux_data.data_array && aux_data.data_array.length > 0
+      );
+      let tmpData = [];
 
-      if(frameGrabberData.length > 0) {
+      if (frameGrabberData.length > 0) {
         for (let i = 0; i < frameGrabberData.length; i++) {
           for (let j = 0; j < frameGrabberData[i].data_array.length; j+=2) {
-      
             tmpData.push({
               source: frameGrabberData[i].data_array[j].data_value,
               filepath: getImageUrl(frameGrabberData[i].data_array[j+1].data_value)
-            })
+            });
           }
         }
 
@@ -350,11 +364,12 @@ class EventHistory extends Component {
               <Col className="px-1 mb-2" key={camera.source} xs={12} sm={6} md={4} lg={3}>
                 {this.renderImage(camera.source, camera.filepath)}
               </Col>
-            )
+            );
           })
-        )
+        );
       }
     }
+    return null;
   }
 
   renderEventOptionsCard() {

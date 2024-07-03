@@ -26,6 +26,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
   const [filepondPristine, setFilepondPristine] = useState(true);
   const [eventAuxData, setEventAuxData] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [formChanged, setFormChanged] = useState(false);
   const pondRef = useRef(null);
 
   useEffect(() => {
@@ -104,6 +105,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
       });
       
       setEventAuxData(prevData => prevData.filter(data => data.id !== auxDataId));
+      setFormChanged(true);
     } catch (error) {
       console.error("Error deleting file or aux data:", error);
       setErrorMessage('An error occurred while deleting the file. Please try again.');
@@ -181,6 +183,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
               }}
               onupdatefiles={(files) => {
                 setFilepondPristine(files.length === 0);
+                setFormChanged(files.length > 0);
                 const fileNames = files.map(file => file.filename);
                 const uniqueFileNames = new Set(fileNames);
                 if (fileNames.length !== uniqueFileNames.size) {
@@ -194,7 +197,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
 
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={handleHide}>Cancel</Button>
-            <Button variant="primary" size="sm" type="submit" disabled={filepondPristine || errorMessage}>Submit</Button>
+            <Button variant="primary" size="sm" type="submit" disabled={!formChanged && filepondPristine || errorMessage}>Submit</Button>
           </Modal.Footer>
         </Form>
       </Modal>
