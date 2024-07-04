@@ -115,6 +115,7 @@ class EventHistory extends Component {
         if (this.state.showNewEventDetails && update.event_id === this.state.event.id) {
           // Check if this is a deletion (no data_array indicates deletion)
           if (!update.data_array) {
+            this.fetchEventExport(this.state.event.id);
             // Remove the deleted aux data from the state
             this.setState(prevState => ({
               event: {
