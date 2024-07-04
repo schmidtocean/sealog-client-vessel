@@ -4,8 +4,10 @@ import EventTemplateList from './event_template_list';
 import EventHistory from './event_history';
 import EventInput from './event_input';
 import EventCommentModal from './event_comment_modal';
+import EventImageModal from './update_event_image';
 import { Row, Col } from 'react-bootstrap';
 import EventShowDetailsModal from './event_show_details_modal';
+import DeleteFileModal from './delete_file_modal';
 
 import * as mapDispatchToProps from '../actions';
 
@@ -29,6 +31,8 @@ class EventLogging extends Component {
         <div>
           <EventShowDetailsModal />
           <EventCommentModal/>
+          <EventImageModal/>
+          <DeleteFileModal />
           <Row className="mt-2" >
             <Col>
               <EventTemplateList />

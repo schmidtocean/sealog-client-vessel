@@ -13,9 +13,9 @@ import { getImageUrl, handleMissingImage } from '../utils';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData', 'SealogVesselUI'];
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData', 'SealogVesselUI'];
 
 const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
@@ -112,8 +112,21 @@ class EventHistory extends Component {
       };
 
       const updateAuxDataHandler = (update) => {
-        if(this.state.showNewEventDetails && update.event_id === this.state.event.id) {
-          this.fetchEventExport(this.state.event.id);
+        if (this.state.showNewEventDetails && update.event_id === this.state.event.id) {
+          // Check if this is a deletion (no data_array indicates deletion)
+          if (!update.data_array) {
+            this.fetchEventExport(this.state.event.id);
+            // Remove the deleted aux data from the state
+            this.setState(prevState => ({
+              event: {
+                ...prevState.event,
+                aux_data: prevState.event.aux_data.filter(data => data.id !== update.id)
+              }
+            }));
+          } else {
+            // This is an update or new aux data
+            this.fetchEventExport(this.state.event.id);
+          }
         }
       };
 
@@ -135,6 +148,7 @@ class EventHistory extends Component {
       this.client.subscribe('/ws/status/deleteEvents', deleteHandler);
       this.client.subscribe('/ws/status/newEventAuxData', updateAuxDataHandler);
       this.client.subscribe('/ws/status/updateEventAuxData', updateAuxDataHandler);
+      this.client.subscribe('/ws/status/deleteEventAuxData', updateAuxDataHandler);
 
     } catch(error) {
       console.log(error);
@@ -191,6 +205,24 @@ class EventHistory extends Component {
 
   handleEventCommentModal(event) {
     this.props.showModal('eventComment', { event: event, handleUpdateEvent: this.props.updateEvent });
+  }
+  
+  handleEventImageModal(event) {
+    const refreshAfterUpload = () => {
+      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, this.state.page);
+      
+      if (this.state.event && this.state.event.id === event.id) {
+        this.fetchEventExport(event.id);
+      }
+    };
+  
+    this.props.showModal('eventImage', { 
+      event: event, 
+      handleUpdateEvent: (updatedEvent) => {
+        this.props.updateEvent(updatedEvent);
+        refreshAfterUpload();
+      }
+    });
   }
 
   renderEventHistoryHeader() {
@@ -311,18 +343,19 @@ class EventHistory extends Component {
   }
 
   renderImageryCard() {
-    if(this.state.event && this.state.event.aux_data) { 
-      let frameGrabberData = this.state.event.aux_data.filter(aux_data => imageAuxDataSources.includes(aux_data.data_source))
-      let tmpData = []
+    if (this.state.event && this.state.event.aux_data) { 
+      let frameGrabberData = this.state.event.aux_data.filter(aux_data => 
+        imageAuxDataSources.includes(aux_data.data_source) && aux_data.data_array && aux_data.data_array.length > 0
+      );
+      let tmpData = [];
 
-      if(frameGrabberData.length > 0) {
+      if (frameGrabberData.length > 0) {
         for (let i = 0; i < frameGrabberData.length; i++) {
           for (let j = 0; j < frameGrabberData[i].data_array.length; j+=2) {
-      
             tmpData.push({
               source: frameGrabberData[i].data_array[j].data_value,
               filepath: getImageUrl(frameGrabberData[i].data_array[j+1].data_value)
-            })
+            });
           }
         }
 
@@ -332,11 +365,12 @@ class EventHistory extends Component {
               <Col className="px-1 mb-2" key={camera.source} xs={12} sm={6} md={4} lg={3}>
                 {this.renderImage(camera.source, camera.filepath)}
               </Col>
-            )
+            );
           })
-        )
+        );
       }
     }
+    return null;
   }
 
   renderEventOptionsCard() {
@@ -424,8 +458,9 @@ class EventHistory extends Component {
         let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
         let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon inverse icon='plus' fixedWidth transform="shrink-4"/></span>;
         let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
+        let updateImageIcon = (<Button variant="" size="sm" onClick={() => this.handleEventImageModal(event)}>📷</Button>);
 
-        eventArray.push(<ListGroup.Item className="event-list-item py-1" key={event.id} ><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip}</span></ListGroup.Item>);
+        eventArray.push(<ListGroup.Item className="event-list-item py-1" key={event.id} ><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip}{updateImageIcon}</span></ListGroup.Item>);
       }
       return eventArray;
     }
