@@ -11,10 +11,13 @@ import Cookies from 'universal-cookie';
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import 'filepond/dist/filepond.min.css';
-import { API_ROOT_URL } from '../client_config';
+import { API_ROOT_URL, IMAGE_PATH } from '../client_config';
 import { showModal } from '../actions';
 
+
 registerPlugin(FilePondPluginFileValidateType);
+
+const Path = require('path');
 
 const EVENT_AUX_DATA_ROUTE = "/api/v1/event_aux_data";
 const FILE_ROUTE = "/files/events";
@@ -56,14 +59,23 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
     
     setErrorMessage(null);
     
+    const eventTimestamp = new Date(event.ts);
+    const formattedDate = eventTimestamp.toISOString().slice(0, 10).replace(/-/g, '');
+    const formattedTime = eventTimestamp.toISOString().slice(11, 19).replace(/:/g, '');
+    const filenameTs = `${formattedDate}_${formattedTime}`;
+    const eventName = event.event_value.toUpperCase().replace(' ', '_');
+  
     for (const file of files) {
       try {
+        const originalFilename = file.filename;
+        const newFilename = `${filenameTs}_${eventName}_${originalFilename}`;
+
         const auxDataPayload = {
           event_id: event.id,
           data_source: AUX_DATA_DATASOURCE,
           data_array: [
             { data_name: "source", data_value: loggername },
-            { data_name: "filename", data_value: file.serverId } // serverId should now be the renamed file
+            { data_name: "filename", data_value: `${file.serverId}|${newFilename}` } // API moves and renames from file.serverId to newFilename
           ]
         };
   
@@ -88,9 +100,9 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
       handleHide();
     }
   };
-
-  const handleImagePreview = (filename) => {
-    const imageUrl = `${API_ROOT_URL}${IMAGE_ROUTE}/${filename}`;
+  
+  const handleImagePreviewModal = (filename) => {
+    const imageUrl = `${API_ROOT_URL}${IMAGE_PATH}/${Path.basename(filename)}`;
     showModal('imagePreview', { name: filename, filepath: imageUrl });
   };
 
@@ -129,7 +141,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
                   href="#" 
                   onClick={(e) => {
                     e.preventDefault();
-                    handleImagePreview(item.data_value);
+                    handleImagePreviewModal(item.data_value);
                   }}
                 >
                   {item.data_value}
@@ -209,7 +221,7 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
           <Modal.Title>Access Denied</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          You don't have permission to access this page.
+          You don&apos;t have permission to access this page.
         </Modal.Body>
       </Modal>
     );
