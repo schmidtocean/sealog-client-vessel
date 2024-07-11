@@ -59,14 +59,23 @@ const EventImageModal = ({ event, handleHide, showModal, roles, loggername }) =>
     
     setErrorMessage(null);
     
+    const eventTimestamp = new Date(event.ts);
+    const formattedDate = eventTimestamp.toISOString().slice(0, 10).replace(/-/g, '');
+    const formattedTime = eventTimestamp.toISOString().slice(11, 19).replace(/:/g, '');
+    const filenameTs = `${formattedDate}_${formattedTime}`;
+    const eventName = event.event_value.toUpperCase().replace(' ', '_');
+  
     for (const file of files) {
       try {
+        const originalFilename = file.filename;
+        const newFilename = `${filenameTs}_${eventName}_${originalFilename}`;
+
         const auxDataPayload = {
           event_id: event.id,
           data_source: AUX_DATA_DATASOURCE,
           data_array: [
             { data_name: "source", data_value: loggername },
-            { data_name: "filename", data_value: file.serverId } // serverId should now be the renamed file
+            { data_name: "filename", data_value: `${file.serverId}|${newFilename}` } // API moves and renames from file.serverId to newFilename
           ]
         };
   
