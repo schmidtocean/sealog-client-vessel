@@ -7,6 +7,7 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { Row, Col, Image, Card, Modal } from 'react-bootstrap';
 import ImagePreviewModal from './image_preview_modal';
+import CoordinateDisplay from './coord_format_cycler';
 
 import * as mapDispatchToProps from '../actions';
 
@@ -123,10 +124,8 @@ class EventShowDetailsModal extends Component {
   }
 
   renderAuxDataCard() {
-
     if(this.state.event && this.state.event.aux_data) {
-
-      const aux_data = this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
+      const aux_data = this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source));
 
       aux_data.sort((a, b) => {
         return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
@@ -134,7 +133,24 @@ class EventShowDetailsModal extends Component {
 
       let return_aux_data = aux_data.map((aux_data) => {
         const aux_data_points = aux_data.data_array.map((data, index) => {
-          return(<div key={`${aux_data.data_source}_data_point_${index}`}><span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
+          if (data.data_name === 'latitude' || data.data_name === 'longitude') {
+            return (
+              <CoordinateDisplay
+                key={`${aux_data.data_source}_data_point_${index}`}
+                coordinate={data.data_name}
+                name={data.data_name}
+                value={data.data_value}
+                uom={data.data_uom}
+              />
+            );
+          }
+          return (
+            <div key={`${aux_data.data_source}_data_point_${index}`}>
+              <span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span>
+              <span className="float-right" style={{wordWrap:'break-word'}}>{data.data_value} {data.data_uom}</span>
+              <br/>
+            </div>
+          );
         });
 
         return (
