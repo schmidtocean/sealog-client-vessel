@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Button, ListGroup, Image, Card, Tooltip, OverlayTrigger, Row, Col, Form, FormControl } from 'react-bootstrap';
 import ImagePreviewModal from './image_preview_modal';
-import CoordinateDisplay from './coord_format_cycler';
+import CoordinateFormatCycler from './coord_format_cycler';
 import * as mapDispatchToProps from '../actions';
 import { Client } from '@hapi/nes/lib/client';
 import axios from 'axios';
@@ -410,7 +410,7 @@ class EventHistory extends Component {
         const aux_data_points = aux_data.data_array.map((data, index) => {
           if (data.data_name === 'latitude' || data.data_name === 'longitude') {
             return (
-              <CoordinateDisplay
+              <CoordinateFormatCycler
                 key={`${aux_data.data_source}_data_point_${index}`}
                 coordinate={data.data_name}
                 name={data.data_name}

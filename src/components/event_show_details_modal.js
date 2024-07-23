@@ -7,7 +7,7 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { Row, Col, Image, Card, Modal } from 'react-bootstrap';
 import ImagePreviewModal from './image_preview_modal';
-import CoordinateDisplay from './coord_format_cycler';
+import CoordinateFormatCycler from './coord_format_cycler';
 
 import * as mapDispatchToProps from '../actions';
 
@@ -135,7 +135,7 @@ class EventShowDetailsModal extends Component {
         const aux_data_points = aux_data.data_array.map((data, index) => {
           if (data.data_name === 'latitude' || data.data_name === 'longitude') {
             return (
-              <CoordinateDisplay
+              <CoordinateFormatCycler
                 key={`${aux_data.data_source}_data_point_${index}`}
                 coordinate={data.data_name}
                 name={data.data_name}

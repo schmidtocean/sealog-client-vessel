@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
-  const [format, setFormat] = useState('decimal');
+const CoordinateFormatCycler = ({ coordinate, name, value, uom }) => {
+  const [format, setFormat] = useState('original');
+  const [parseError, setParseError] = useState(false);
 
   const parseCoordinate = (value, coordinate) => {
     if (typeof value === 'number') {
@@ -25,7 +26,15 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
     // Parse DMS format
     const dmsParts = numericPart.split(/[°'"]+/);
     if (dmsParts.length > 1) {
+      if (dmsParts.length !== 3) {
+        console.error(`Invalid DMS format: ${value}`);
+        return NaN;
+      }
       const [degrees, minutes = 0, seconds = 0] = dmsParts.map(parseFloat);
+      if (isNaN(degrees) || isNaN(minutes) || isNaN(seconds)) {
+        console.error(`Invalid DMS values: ${value}`);
+        return NaN;
+      }
       let decimal = degrees + (minutes / 60) + (seconds / 3600);
       if (direction === 'S' || direction === 'W' || numericPart.startsWith('-')) {
         decimal = -decimal;
@@ -35,6 +44,10 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
 
     // Parse decimal format
     let decimal = parseFloat(numericPart);
+    if (isNaN(decimal)) {
+      console.error(`Failed to parse decimal value: ${value}`);
+      return NaN;
+    }
     if (direction === 'S' || direction === 'W') {
       decimal = -decimal;
     }
@@ -46,18 +59,21 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
     const decimal = parseCoordinate(value, coordinate);
 
     if (isNaN(decimal)) {
-      console.error(`Failed to parse value: ${value}`);
-      return 'Invalid Input';
+      setParseError(true);
+      return value; // Return original value if parsing fails
     }
 
     if (coordinate === 'latitude' && (decimal < -90 || decimal > 90)) {
       console.error(`Invalid latitude value: ${decimal}`);
-      return 'Invalid Latitude';
+      setParseError(true);
+      return value;
     } else if (coordinate === 'longitude' && (decimal < -180 || decimal > 180)) {
       console.error(`Invalid longitude value: ${decimal}`);
-      return 'Invalid Longitude';
+      setParseError(true);
+      return value;
     }
 
+    setParseError(false);
     return decimal;
   };
 
@@ -70,21 +86,36 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
     const minutesFloat = (absDec - degrees) * 60;
     const minutes = Math.floor(minutesFloat);
     const seconds = (minutesFloat - minutes) * 60;
-    return `${degrees}° ${minutes.toString().padStart(2, '0')}' ${seconds.toFixed(3).padStart(6, '0')}" ${direction}`;
+
+    // Format seconds to 4 decimal places without rounding
+    const formattedSeconds = seconds.toFixed(4);
+
+    return `${degrees}° ${minutes.toString().padStart(2, '0')}' ${formattedSeconds.padStart(7, '0')}" ${direction}`;
   };
 
   const convertToDM = (decimal, coordinate) => {
+    const direction = coordinate === 'latitude' 
+      ? (decimal >= 0 ? 'N' : 'S') 
+      : (decimal >= 0 ? 'E' : 'W');
     const absDec = Math.abs(decimal);
     const degrees = Math.floor(absDec);
     const minutes = (absDec - degrees) * 60;
-    return `${decimal < 0 ? '-' : ''}${degrees}° ${minutes.toFixed(4).padStart(7, '0')}'`;
+
+    // Format minutes to 5 decimal places without rounding
+    const formattedMinutes = minutes.toFixed(5);
+
+    return `${degrees}° ${formattedMinutes.padStart(8, '0')}' ${direction}`;
   };
 
   const convertCoordinate = (value, coordinate, format) => {
+    if (parseError) {
+      return format === 'error' ? 'Unable to convert format' : value;
+    }
+
     const decimal = convertToDecimal(value, coordinate);
 
     if (typeof decimal === 'string') {
-      return decimal; // Return error message
+      return decimal; // Return original value if conversion failed
     }
 
     switch (format) {
@@ -93,18 +124,26 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
       case 'dm':
         return convertToDM(decimal, coordinate);
       case 'decimal':
-      default:
         return `${decimal.toFixed(6)}°`;
+      case 'original':
+        return value;
+      default:
+        console.warn(`Unknown format: ${format}. Defaulting to original.`);
+        return value;
     }
   };
 
   const cycleFormat = () => {
     setFormat(currentFormat => {
+      if (parseError) {
+        return currentFormat === 'original' ? 'error' : 'original';
+      }
       switch (currentFormat) {
+        case 'original': return 'decimal';
         case 'decimal': return 'dms';
         case 'dms': return 'dm';
-        case 'dm': return 'decimal';
-        default: return 'decimal';
+        case 'dm': return 'original';
+        default: return 'original';
       }
     });
   };
@@ -115,17 +154,17 @@ const CoordinateDisplay = ({ coordinate, name, value, uom }) => {
     <div onClick={cycleFormat} className="coordinate-display">
       <span className="data-name">{name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span>
       <span className="float-right">
-        {formatValue} {format === 'decimal' ? uom : ''}
+        {formatValue} {!parseError && format === 'decimal' ? uom : ''}
       </span>
     </div>
   );
 };
 
-CoordinateDisplay.propTypes = {
+CoordinateFormatCycler.propTypes = {
   coordinate: PropTypes.oneOf(['latitude', 'longitude']).isRequired,
   name: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   uom: PropTypes.string.isRequired,
 };
 
-export default CoordinateDisplay;
+export default CoordinateFormatCycler;
