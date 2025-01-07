@@ -52,7 +52,7 @@ class UpdateCruise extends Component {
   }
 
   async handleFormSubmit(formProps) {
-    formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
+    formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()).filter(tag => tag !== '') : [];
 
     // formProps.cruise_additional_meta = {}
 
