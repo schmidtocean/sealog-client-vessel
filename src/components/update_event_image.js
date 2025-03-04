@@ -158,7 +158,7 @@ function EventImageModal({ event, handleHide, showModal: showModalProp, roles, l
     );
   };
 
-  if (roles && (roles.includes("admin") || roles.includes('event_manager'))) {
+  if (roles && (roles.includes("admin") || roles.includes('event_manager') || roles.includes('event_logger'))) {
     return (
       <Modal size="lg" show onHide={handleHide}>
         <Form onSubmit={handleFormSubmit}>
