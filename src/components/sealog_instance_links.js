@@ -7,10 +7,10 @@ const instanceIconStyle = {
   objectFit: 'contain'
 };
 
-const baseBackgroundColor = 'rgba(255, 255, 255, 0.08)';
-const baseBorderColor = 'rgba(255, 255, 255, 0.16)';
-const hoverBackgroundColor = 'rgba(255, 255, 255, 0.16)';
-const hoverBorderColor = 'rgba(255, 255, 255, 0.28)';
+const baseBackgroundColor = 'rgba(72, 72, 72, 0.04)';
+const baseBorderColor = 'rgba(103, 103, 103, 0.26)';
+const hoverBackgroundColor = 'rgba(72, 72, 72, 0.24)';
+const hoverBorderColor = 'rgba(103, 103, 103, 0.46)';
 
 const fixedLinkBaseStyle = {
   height: '38px',
