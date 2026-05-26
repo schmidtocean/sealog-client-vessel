@@ -12,11 +12,17 @@ const SERVER_HOSTNAME = typeof window !== 'undefined' && window.location.hostnam
 // Default is 8000.
 const SERVER_PORT = 8000
 
+// Set the websocket port number. In production this should match SERVER_PORT.
+// When using the webpack dev proxy (see webpack.config.js), set SERVER_PORT to
+// the dev server port (8080) but keep WS_PORT at 8000 so WebSocket connects
+// directly to the server, bypassing the proxy.
+const WS_PORT = SERVER_PORT
+
 // Complete URLs for the Sealog Server.
 // This is comprised based on the SERVER_TLS, SERVER_HOSTNAME and
 // SERVER_PORT varialbles
 const API_ROOT_URL = `${SERVER_TLS ? 'https' : 'http'}://${SERVER_HOSTNAME}:${SERVER_PORT}/sealog-server`
-const WS_ROOT_URL = `${SERVER_TLS ? 'wss' : 'ws'}://${SERVER_HOSTNAME}:${SERVER_PORT}/ws`
+const WS_ROOT_URL = `${SERVER_TLS ? 'wss' : 'ws'}://${SERVER_HOSTNAME}:${WS_PORT}/ws`
 
 // URL Root path to the client.
 // This MUST match where the client is being hosted by the webserver.
@@ -38,7 +44,7 @@ const LOGIN_SCREEN_TXT =
 // Optional image file shown on login page. Will appear under the
 // LOGIN_SCREEN_TXT. This image must end in ".jpg", "jpeg", ".png" format and
 // located in the ./assets/images folder
-const LOGIN_IMAGE = null
+const LOGIN_IMAGE = 'fkt.png'
 
 // Text show on the main page above the cruise list.
 const MAIN_SCREEN_HEADER = 'Welcome to Sealog'
@@ -49,7 +55,7 @@ const MAIN_SCREEN_TXT =
   'Please select a cruise from the list below. Selecting a cruise will open the cruise information panel. At the bottom of the cruise information panel there will be links proceeding to the cruise replay and cruise map sections of Sealog. If at any time you wish to return to this page please click the "Review Cruises" text in upper navigation bar.'
 
 // Text displayed on the left side of the title bar
-const HEADER_TITLE = `Sealog v${Pkg.version} for R/V Falkor `
+const HEADER_TITLE = `Sealog v${Pkg.version} `
 
 // Default vessel used when created new cruises
 const DEFAULT_VESSEL = 'R/V Falkor (too)'
