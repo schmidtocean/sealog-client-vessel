@@ -14,6 +14,25 @@ module.exports = {
       disableDotRule: true,
       index: ROOT_PATH
     }
+    // When running the dev server against a containerized sealog-server on port
+    // 8000, enable this proxy block to avoid CORS issues. Also set SERVER_PORT
+    // to 8080 in client_settings.js so API URLs route through the dev server.
+    // Remove for production builds served by nginx.
+    // proxy: [
+    //   {
+    //     context: ['/sealog-server', '/ws', '/files'],
+    //     target: 'http://localhost:8000',
+    //     ws: true
+    //   }
+    // ],
+    // client: {
+    //   webSocketURL: 'ws://localhost:8080/webpack-hmr'
+    // },
+    // webSocketServer: {
+    //   options: {
+    //     path: '/webpack-hmr'
+    //   }
+    // }
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
