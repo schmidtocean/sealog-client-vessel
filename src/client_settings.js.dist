@@ -49,10 +49,10 @@ const MAIN_SCREEN_TXT =
   'Please select a cruise from the list below. Selecting a cruise will open the cruise information panel. At the bottom of the cruise information panel there will be links proceeding to the cruise replay and cruise map sections of Sealog. If at any time you wish to return to this page please click the "Review Cruises" text in upper navigation bar.'
 
 // Text displayed on the left side of the title bar
-const HEADER_TITLE = `Sealog for Vessels v${Pkg.version}`
+const HEADER_TITLE = `Sealog v${Pkg.version} for R/V Falkor `
 
 // Default vessel used when created new cruises
-const DEFAULT_VESSEL = 'R/V Discovery'
+const DEFAULT_VESSEL = 'R/V Falkor (too)'
 
 // Add cruise-level authentication.
 // This needs to match the 'useAccessControl' setting on the sealog-server.
@@ -88,17 +88,17 @@ const EXCLUDE_AUX_DATA_SOURCES = []
 // Optional list of auxdata datasources that should be interpreted as imagery
 // and formatted as such in the event history, lowering replay and lowering
 // gallery.
-const IMAGES_AUX_DATA_SOURCES = ['eventFileAttachments', 'framegrabber']
+const IMAGES_AUX_DATA_SOURCES = ['eventFileAttachments', 'vesselRealtimeFramegrabberData']
 
 // Optional list defining how to order auxdata data sources in the event
 // history and lowering replay
-const AUX_DATA_SORT_ORDER = ['eventFileAttachments', 'vesselRealtimeNavData']
+const AUX_DATA_SORT_ORDER = ['eventFileAttachments', 'vesselRealtimeNavData', 'vesselWeather', 'vesselSeawater']
 
 // Optional key/value pairs for how to format auxdata data source names in
 // event history and event replay.
 // Format: {<auxdata_datasource>: <display text>}.
 // i.e. { realtimeCTDData: 'Realtime CTD Data', ... }
-const AUX_DATA_DATASOURCE_REPLACE = null
+const AUX_DATA_DATASOURCE_REPLACE = { vesselRealtimeNavData: 'Vessel Position' }
 
 // Optional list defining how to order event template categories
 // i.e. ['science','problem']
