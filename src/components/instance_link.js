@@ -32,9 +32,9 @@ class InstanceLink extends Component {
 
     return (
       <OverlayTrigger placement={placementTT} instance={this.props.instance} delay={{ show: 250, hide: 400 }} overlay={this.renderTooltip}>
-        <Link className={placementCN} to={{ pathname: `./${this.props.instance}` }}>
+        <a className={placementCN} href={`/${this.props.instance}`}>
           <Image style={{ height: '30px' }} src={imageFN} />
-        </Link>
+        </a>
       </OverlayTrigger>
     )
   }
