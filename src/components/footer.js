@@ -139,7 +139,7 @@ class Footer extends Component {
             </span>
           </Nav>
         </NavbarCollapse>
-        <InstanceLink placement='right' instance='sealog-Sub' />
+        <InstanceLink placement='right' instance='sealog-sub' />
       </Navbar>
     )
   }
