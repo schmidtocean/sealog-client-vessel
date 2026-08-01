@@ -28,7 +28,7 @@ const WS_ROOT_URL = `${SERVER_TLS ? 'wss' : 'ws'}://${SERVER_HOSTNAME}:${WS_PORT
 // This MUST match where the client is being hosted by the webserver.
 // Change this if not hosting the client at the webserver's document root
 // i.e. '/sealog/'
-const ROOT_PATH = '/sealog-FKt/'
+const ROOT_PATH = '/sealog-fkt/'
 
 // Where the images are hosted on the webserver.
 const IMAGE_PATH = '/files/images'
