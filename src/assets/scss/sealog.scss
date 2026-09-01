@@ -81,7 +81,7 @@ button.btn-template {
 }
 
 .eventList {
-  overflow-y: scroll;
+  overflow-y: auto;
   font-size: .8rem;
 
   &:focus { outline: none; }
@@ -158,6 +158,11 @@ button.btn-template {
 .event-list-item-summary {
   width: 100%;
   cursor: pointer;
+  overflow: auto;
+}
+
+.event-list-item-summary + * {
+  flex: none;
 }
 
 tbody {
